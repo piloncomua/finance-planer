@@ -51,7 +51,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set promo links
     document.getElementById('youtubeBtn').href = promoLinks.youtube;
     document.getElementById('freedomBtn').href = promoLinks.freedom;
+
+    // Apply formatting to numeric fields
+    const numericFields = ['initialCapital', 'monthlyIncome', 'monthlyLivingExpenses'];
+    numericFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', (e) => handleNumericInput(e.target));
+            // Initial format if there's a value
+            if (el.value) handleNumericInput(el);
+        }
+    });
 });
+
+// Helper for numeric formatting with cursor preservation
+function handleNumericInput(input) {
+    let value = input.value.replace(/\s/g, ''); // Remove existing spaces
+    if (!/^\d*$/.test(value)) {
+        // If not a number, revert to digits only
+        value = value.replace(/\D/g, '');
+    }
+
+    const selectionStart = input.selectionStart;
+    const oldLength = input.value.length;
+
+    // Format with spaces
+    const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    input.value = formatted;
+
+    // Restore cursor position
+    const newLength = formatted.length;
+    const delta = newLength - oldLength;
+    input.setSelectionRange(selectionStart + delta, selectionStart + delta);
+}
+
+function cleanNumericValue(val) {
+    return val ? val.toString().replace(/\s/g, '') : '';
+}
 
 // Event listeners
 form.addEventListener('submit', handleFormSubmit);
@@ -138,7 +174,13 @@ resetBtn.addEventListener('click', () => {
             if (radio) radio.checked = true;
         } else {
             const el = document.getElementById(id);
-            if (el) el.value = val;
+            if (el) {
+                el.value = val;
+                // Re-apply formatting if needed
+                if (['initialCapital', 'monthlyIncome', 'monthlyLivingExpenses'].includes(id)) {
+                    handleNumericInput(el);
+                }
+            }
         }
     });
     updateRetirementModeUI();
@@ -151,9 +193,9 @@ async function handleFormSubmit(e) {
 
     const formData = new FormData(form);
     const data = {
-        initial_capital: parseFloat(formData.get('initialCapital')),
-        monthly_income: parseFloat(formData.get('monthlyIncome')),
-        monthly_living_expenses: parseFloat(formData.get('monthlyLivingExpenses')),
+        initial_capital: parseFloat(cleanNumericValue(formData.get('initialCapital'))),
+        monthly_income: parseFloat(cleanNumericValue(formData.get('monthlyIncome'))),
+        monthly_living_expenses: parseFloat(cleanNumericValue(formData.get('monthlyLivingExpenses'))),
         income_growth_rate: parseFloat(formData.get('incomeGrowthRate')),
         interest_rate: parseFloat(formData.get('interestRate')),
         inflation_rate: parseFloat(formData.get('inflationRate')),
@@ -406,7 +448,12 @@ function loadSavedData() {
                 if (radio) radio.checked = true;
             } else if (map[k]) {
                 const el = document.getElementById(map[k]);
-                if (el) el.value = v;
+                if (el) {
+                    el.value = v;
+                    if (['initialCapital', 'monthlyIncome', 'monthlyLivingExpenses'].includes(map[k])) {
+                        handleNumericInput(el);
+                    }
+                }
             }
         });
     } catch (e) { console.error(e); }
