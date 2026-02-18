@@ -110,10 +110,17 @@ async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     post_text = " ".join(context.args[1:])
 
     try:
+        # Для каналов НЕЛЬЗЯ использовать прямой web_app (тип кнопки), 
+        # Telegram разрешает это только в ЛС. 
+        # В каналах нужно использовать обычную кнопку-ссылку на приложение бота.
+        bot_info = await context.bot.get_me()
+        # Ссылка вида https://t.me/bot_username/app
+        webapp_link = f"https://t.me/{bot_info.username}/app"
+        
         keyboard = [
             [InlineKeyboardButton(
                 "📊 Открыть Инвестиционный Калькулятор",
-                web_app=WebAppInfo(url=WEBAPP_URL)
+                url=webapp_link
             )]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
