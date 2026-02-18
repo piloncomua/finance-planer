@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from calculator import InvestmentCalculator
 import os
+import subprocess
+import time
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
@@ -96,5 +98,11 @@ def calculate():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    # Запуск бота в отдельном процессе (для экономии на Render Free Tier)
+    if os.environ.get('TELEGRAM_BOT_TOKEN'):
+        print("Starting Bot as a subprocess...")
+        subprocess.Popen(["python", "bot.py"])
+    
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    # Включаем debug=False для продакшена на Render
+    app.run(host='0.0.0.0', port=port, debug=False)
