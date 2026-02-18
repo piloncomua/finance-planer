@@ -76,6 +76,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     """Запуск бота"""
+    import asyncio
+    
     # Создаем приложение
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
@@ -84,6 +86,15 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     
     # Запускаем бота
+    print("Bot is starting...")
+    
+    # Явно создаем и устанавливаем цикл событий для совместимости (особенно на Python 3.12+)
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
     print("Bot is running!")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
