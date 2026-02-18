@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '8234624997:AAE39pPM4pS-ThDdncKToc3s152zQysXS10')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 WEBAPP_URL = os.getenv('WEBAPP_URL', 'http://localhost:5000')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
