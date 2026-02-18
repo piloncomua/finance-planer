@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инвестиционный Калькулятор</title>
+    <link rel="stylesheet" href="style.css?v=7">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Инвестиционный Калькулятор</h1>
+            <p class="subtitle">Планируйте свое финансовое будущее</p>
+        </header>
+
+        <div id="editDataContainer" style="display: none; text-align: center; margin-bottom: 20px;">
+            <button class="btn-secondary" id="editDataBtn">
+                ✏️ Изменить данные
+            </button>
+        </div>
+
+        <div id="formCard" class="card">
+            <h2>Параметры расчета</h2>
+            <form id="calculatorForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="initialCapital">
+                            💰 Начальный капитал ($)
+                            <span class="hint">Сколько у вас есть сейчас</span>
+                        </label>
+                        <input type="number" id="initialCapital" name="initialCapital" placeholder="10000" min="0"
+                            max="1000000000" step="any" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="monthlyIncome">
+                            💵 Месячный доход ($)
+                            <span class="hint">Ваш общий доход</span>
+                        </label>
+                        <input type="number" id="monthlyIncome" name="monthlyIncome" placeholder="3000" min="0"
+                            max="1000000" step="any" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="monthlyLivingExpenses">
+                            🏠 Расходы на жизнь ($)
+                            <span class="hint">Сколько тратите сейчас</span>
+                        </label>
+                        <input type="number" id="monthlyLivingExpenses" name="monthlyLivingExpenses" placeholder="1500"
+                            min="0" max="1000000" step="any" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interestRate">
+                            📊 Доходность капитала (%)
+                            <span class="info-trigger" title="Нажмите для справки">ℹ️</span>
+                            <span class="hint">Годовая доходность инвестиций</span>
+                        </label>
+                        <input type="number" id="interestRate" name="interestRate" placeholder="8" min="0" max="100"
+                            step="0.1" required>
+                        <div id="interestTooltip" class="custom-tooltip" style="display: none;">
+                            Средний доход по ETF на S&P 500 за последние 100 лет составил 8+ процентов. Предыдущие
+                            результаты не гарантируют будущих успехов.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currentAge">
+                            🎂 Текущий возраст
+                        </label>
+                        <input type="number" id="currentAge" name="currentAge" placeholder="30" min="0" max="150"
+                            required>
+                    </div>
+
+                    <!-- Выбор режима пенсии -->
+                    <div class="form-group full-width">
+                        <label>🏖️ Режим выхода на пенсию</label>
+                        <div class="mode-switch-container">
+                            <label class="mode-label">
+                                <input type="radio" name="retirement_mode" value="manual" checked>
+                                <span>Я хочу на пенсию в...</span>
+                            </label>
+                            <label class="mode-label">
+                                <input type="radio" name="retirement_mode" value="auto">
+                                <span>Авто-поиск (4%)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="retirementAgeGroup">
+                        <label for="retirementAge">
+                            📅 Возраст выхода на пенсию
+                        </label>
+                        <input type="number" id="retirementAge" name="retirementAge" placeholder="45" min="0" max="150">
+                    </div>
+
+                    <!-- Дополнительные настройки -->
+                    <div class="advanced-toggle" id="advancedToggle">
+                        <span>⚙️ Дополнительные настройки</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+
+                    <div class="advanced-content" id="advancedContent" style="display: none;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="incomeGrowthRate">
+                                    📈 Рост доходов (%)
+                                    <span class="hint">Ежегодный рост вашей зарплаты</span>
+                                </label>
+                                <input type="number" id="incomeGrowthRate" name="incomeGrowthRate" value="3" min="0"
+                                    max="100" step="0.1" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inflationRate">
+                                    📉 Инфляция (%)
+                                    <span class="info-trigger-inflation" title="Нажмите для справки">ℹ️</span>
+                                    <span class="hint">Среднегодовая инфляция</span>
+                                </label>
+                                <input type="number" id="inflationRate" name="inflationRate" value="3" min="0" max="70"
+                                    step="0.1" required>
+                                <div id="inflationTooltip" class="custom-tooltip" style="display: none;">
+                                    Инфляция снижает покупательную способность денег. В расчетах ваши будущие расходы
+                                    растут на этот процент каждый год.
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="maxAge">
+                                    ⏳ Прогноз до возраста
+                                </label>
+                                <input type="number" id="maxAge" name="maxAge" value="90" min="0" max="200" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-primary" id="calculateBtn">
+                        <span class="btn-icon">🚀</span>
+                        Рассчитать
+                    </button>
+                    <button type="button" class="btn-secondary" id="resetBtn" style="margin-top: 10px; width: 100%;">
+                        🔄 Сбросить параметры
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="resultsSection" class="results-section" style="display: none;">
+            <div class="card">
+                <h2>📈 График роста капитала</h2>
+                <div class="chart-container">
+                    <canvas id="capitalChart"></canvas>
+                </div>
+                <div id="chartLegend" class="chart-legend" style="display: none;">
+                    <div class="legend-item">
+                        <span class="legend-dot safe"></span>
+                        <span class="legend-text">Безопасно (< 4%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot warning"></span>
+                        <span class="legend-text">Переход (4-6%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot danger"></span>
+                        <span class="legend-text">Опасно (> 6%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card summary-card">
+                <h2>📊 Итог</h2>
+                <div id="summaryContent"></div>
+            </div>
+
+            <!-- Рекламные кнопки -->
+            <div class="promo-buttons">
+                <a href="#" id="youtubeBtn" class="btn-promo btn-youtube" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg"
+                        alt="YouTube" class="btn-logo">
+                    Мой YouTube канал
+                </a>
+                <a href="#" id="freedomBtn" class="btn-promo btn-freedom" target="_blank">
+                    <img src="https://freedom24.com/apple-touch-icon.png" alt="Freedom24" class="btn-logo">
+                    Инвестировать с Freedom24
+                </a>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn-secondary" id="toggleTableBtn">
+                    📋 Показать детальную таблицу
+                </button>
+            </div>
+
+            <div id="tableContainer" class="card" style="display: none;">
+                <h2>📋 Детальные расчеты</h2>
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Возраст</th>
+                                <th>Капитал на начало ($)</th>
+                                <th>Доход % ($)</th>
+                                <th>Сбережения ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>Считаем...</p>
+        </div>
+    </div>
+
+    <script src="app.js?v=7"></script>
+</body>
+
+</html>
