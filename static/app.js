@@ -39,7 +39,7 @@ const inflationTooltip = document.getElementById('inflationTooltip');
 const resetBtn = document.getElementById('resetBtn');
 
 const promoLinks = {
-    youtube: 'https://youtube.com', // Placeholder, user will provide later
+    youtube: 'https://www.youtube.com/@Pensioner_v35',
     freedom: 'https://freedom24.com/invite_from/7446576'
 };
 
