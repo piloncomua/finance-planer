@@ -74,27 +74,59 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(help_text, parse_mode='Markdown')
 
+async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Отправка поста в канал с кнопкой калькулятора (только для админа)"""
+    # Замените на свой числовой ID для максимальной безопасности
+    ADMIN_USERNAME = "Mikleivanovich"
+    
+    user = update.effective_user
+    if user.username != ADMIN_USERNAME:
+        await update.message.reply_text("⛔ У вас нет прав для выполнения этой команды.")
+        return
+
+    # Проверка аргументов: /post @channel текст
+    if len(context.args) < 2:
+        await update.message.reply_text(
+            "📝 **Как использовать:**\n"
+            "`/post @имя_канала Текст вашего поста`",
+            parse_mode='Markdown'
+        )
+        return
+
+    channel_id = context.args[0]
+    # Собираем весь текст после имени канала
+    post_text = " ".join(context.args[1:])
+
+    try:
+        keyboard = [
+            [InlineKeyboardButton(
+                "📊 Открыть Инвестиционный Калькулятор",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await context.bot.send_message(
+            chat_id=channel_id,
+            text=post_text,
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+        await update.message.reply_text(f"✅ Пост успешно отправлен в {channel_id}")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Ошибка при отправке: {str(e)}\n\nУбедитесь, что бот добавлен в администраторы канала.")
+
 def main():
     """Запуск бота"""
-    import asyncio
-    
     # Создаем приложение
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
     # Регистрируем обработчики
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("post", post_command))
     
     # Запускаем бота
-    print("Bot is starting...")
-    
-    # Явно создаем и устанавливаем цикл событий для совместимости (особенно на Python 3.12+)
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
     print("Bot is running!")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
