@@ -98,10 +98,19 @@ def calculate():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Запуск бота в отдельном процессе (для экономии на Render Free Tier)
-    if os.environ.get('TELEGRAM_BOT_TOKEN'):
-        print("Starting Bot as a subprocess...")
-        subprocess.Popen(["python", "bot.py"])
+    # Запуск бота в отдельном процессе
+    token = os.environ.get('TELEGRAM_BOT_TOKEN')
+    if token:
+        try:
+            import sys
+            print(f"Starting Bot as a subprocess using {sys.executable}...")
+            # Перенаправляем вывод бота в основной поток логов для отладки на Render
+            subprocess.Popen([sys.executable, "bot.py"], stdout=sys.stdout, stderr=sys.stderr)
+            print("Bot subprocess initiated and logging redirected.")
+        except Exception as e:
+            print(f"Failed to start bot subprocess: {e}")
+    else:
+        print("TELEGRAM_BOT_TOKEN not found in environment. Bot not started.")
     
     port = int(os.environ.get('PORT', 5000))
     # Включаем debug=False для продакшена на Render
