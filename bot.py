@@ -74,18 +74,21 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(help_text, parse_mode='Markdown')
 
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Проверка связи"""
+    await update.message.reply_text("🏓 Понг! Бот на связи и работает.")
+
 async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Отправка поста в канал с кнопкой калькулятора (только для админа)"""
-    # Список разрешенных юзернеймов (без @)
-    ADMIN_USERNAMES = ["Mikleivanovich", "mikleivanovich"] 
+    """Отправка поста в канал с кнопкой калькулятора (только для владельца)"""
+    # Ваш числовой ID для 100% надежности
+    ADMIN_ID = 775697194
     
     user = update.effective_user
     print(f"Post command received from user: {user.username} (ID: {user.id})")
     
-    if not user.username or user.username.lower() not in [u.lower() for u in ADMIN_USERNAMES]:
-        # Отправляем сообщение об ошибке только в ЛС, чтобы не спамить
-        await update.message.reply_text(f"⛔ У вас нет прав. Ваш юзернейм: @{user.username}")
-        print(f"Access denied for user {user.username}")
+    if user.id != ADMIN_ID:
+        await update.message.reply_text(f"⛔ У вас нет прав. Ваш ID: {user.id}")
+        print(f"Access denied for user ID {user.id}")
         return
 
     print(f"Arguments received: {context.args}")
@@ -132,6 +135,7 @@ def main():
     # Регистрируем обработчики
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler("post", post_command))
     
     # Запускаем бота
