@@ -12,6 +12,11 @@ load_dotenv()
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 WEBAPP_URL = os.getenv('WEBAPP_URL', 'http://localhost:5000')
 
+print(f"Bot script started. Token found: {bool(TELEGRAM_BOT_TOKEN)}, WebApp URL: {WEBAPP_URL}")
+
+if not TELEGRAM_BOT_TOKEN:
+    print("CRITICAL ERROR: TELEGRAM_BOT_TOKEN is missing!")
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
     
@@ -139,7 +144,19 @@ def main():
     application.add_handler(CommandHandler("post", post_command))
     
     # Запускаем бота
-    print("Bot is running!")
+    print("Bot is starting...")
+    
+    # Принудительно создаем цикл событий для стабильности на Render (Python 3.12+)
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    print("Bot is running and loop is set!")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
