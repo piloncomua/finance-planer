@@ -76,25 +76,29 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Отправка поста в канал с кнопкой калькулятора (только для админа)"""
-    # Замените на свой числовой ID для максимальной безопасности
-    ADMIN_USERNAME = "Mikleivanovich"
+    # Список разрешенных юзернеймов (без @)
+    ADMIN_USERNAMES = ["Mikleivanovich", "mikleivanovich"] 
     
     user = update.effective_user
-    if user.username != ADMIN_USERNAME:
-        await update.message.reply_text("⛔ У вас нет прав для выполнения этой команды.")
+    print(f"Post command received from user: {user.username} (ID: {user.id})")
+    
+    if not user.username or user.username.lower() not in [u.lower() for u in ADMIN_USERNAMES]:
+        # Отправляем сообщение об ошибке только в ЛС, чтобы не спамить
+        await update.message.reply_text(f"⛔ У вас нет прав. Ваш юзернейм: @{user.username}")
+        print(f"Access denied for user {user.username}")
         return
+
+    print(f"Arguments received: {context.args}")
 
     # Проверка аргументов: /post @channel текст
     if len(context.args) < 2:
         await update.message.reply_text(
             "📝 **Как использовать:**\n"
-            "`/post @имя_канала Текст вашего поста`",
-            parse_mode='Markdown'
+            "`/post @имя_канала Текст вашего поста`"
         )
         return
 
     channel_id = context.args[0]
-    # Собираем весь текст после имени канала
     post_text = " ".join(context.args[1:])
 
     try:
@@ -106,6 +110,7 @@ async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
+        print(f"Attempting to send message to {channel_id}...")
         await context.bot.send_message(
             chat_id=channel_id,
             text=post_text,
@@ -113,8 +118,11 @@ async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
         await update.message.reply_text(f"✅ Пост успешно отправлен в {channel_id}")
+        print("Message sent successfully.")
     except Exception as e:
-        await update.message.reply_text(f"❌ Ошибка при отправке: {str(e)}\n\nУбедитесь, что бот добавлен в администраторы канала.")
+        error_msg = f"❌ Ошибка: {str(e)}"
+        print(error_msg)
+        await update.message.reply_text(error_msg + "\n\nПроверьте, что бот админ в канале.")
 
 def main():
     """Запуск бота"""
