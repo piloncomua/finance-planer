@@ -83,6 +83,30 @@ async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Проверка связи"""
     await update.message.reply_text("🏓 Понг! Бот на связи и работает.")
 
+async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Проверка прав бота в канале"""
+    ADMIN_ID = 775697194
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    if not context.args:
+        await update.message.reply_text("Введите имя канала: `/check @name`", parse_mode='Markdown')
+        return
+
+    chat_id = context.args[0]
+    try:
+        chat = await context.bot.get_chat(chat_id)
+        me = await context.bot.get_chat_member(chat_id, context.bot.id)
+        
+        status_text = (
+            f"✅ **Канал найден:** {chat.title}\n"
+            f"👤 **Мой статус:** {me.status}\n"
+            f"📝 **Права на пост:** {'Есть' if me.can_post_messages else 'НЕТ'}\n"
+        )
+        await update.message.reply_text(status_text, parse_mode='Markdown')
+    except Exception as e:
+        await update.message.reply_text(f"❌ **Ошибка проверки:** {str(e)}\n\nУбедитесь, что канал публичный и бот там админ.")
+
 async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Отправка поста в канал с кнопкой калькулятора (только для владельца)"""
     # Ваш числовой ID для 100% надежности
@@ -148,6 +172,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("ping", ping))
+    application.add_handler(CommandHandler("check", check_command))
     application.add_handler(CommandHandler("post", post_command))
     
     # Запускаем бота
