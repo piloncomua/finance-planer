@@ -107,6 +107,18 @@ label {
     display: block;
 }
 
+.field-note {
+    font-size: 12px;
+    color: var(--text-color);
+    font-weight: 400;
+    line-height: 1.6;
+    margin-top: 6px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-left: 2px solid var(--button-color);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
 input[type="text"],
 input[type="number"] {
     width: 100%;
