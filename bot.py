@@ -5,12 +5,17 @@ Telegram бот для запуска Mini App калькулятора инве
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes
 import os
+import asyncio
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 WEBAPP_URL = os.getenv('WEBAPP_URL', 'http://localhost:5000')
+# Имя вашего приложения в BotFather (Short Name). 
+# Если вы при создании Mini App указали не 'app', поменяйте здесь.
+MINI_APP_NAME = "app" 
 
 print(f"Bot script started. Token found: {bool(TELEGRAM_BOT_TOKEN)}, WebApp URL: {WEBAPP_URL}")
 
@@ -138,8 +143,8 @@ async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Telegram разрешает это только в ЛС. 
         # В каналах нужно использовать обычную кнопку-ссылку на приложение бота.
         bot_info = await context.bot.get_me()
-        # Ссылка вида https://t.me/bot_username/app
-        webapp_link = f"https://t.me/{bot_info.username}/app"
+        # Ссылка вида https://t.me/bot_username/short_name
+        webapp_link = f"https://t.me/{bot_info.username}/{MINI_APP_NAME}"
         
         keyboard = [
             [InlineKeyboardButton(
@@ -162,6 +167,26 @@ async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         error_msg = f"❌ Ошибка: {str(e)}"
         print(error_msg)
         await update.message.reply_text(error_msg + "\n\nПроверьте, что бот админ в канале.")
+        print(f"Post command failed: {e}")
+
+async def keep_alive():
+    """Фоновая задача для предотвращения 'засыпания' Render (Free Tier)"""
+    if "localhost" in WEBAPP_URL or "127.0.0.1" in WEBAPP_URL:
+        print("Keep-alive: Local environment detected, skipping.")
+        return
+
+    print(f"Keep-alive task started. Pinging {WEBAPP_URL} every 14 minutes.")
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                # Пингуем главную страницу калькулятора
+                response = await client.get(WEBAPP_URL, timeout=10)
+                print(f"Keep-alive ping: {response.status_code} at {os.environ.get('PORT', 'unknown port')}")
+            except Exception as e:
+                print(f"Keep-alive error: {e}")
+            
+            # Ждем 14 минут (Render засыпает после 15 минут простоя)
+            await asyncio.sleep(14 * 60)
 
 def main():
     """Запуск бота"""
@@ -177,6 +202,9 @@ def main():
     
     # Запускаем бота
     print("Bot is starting...")
+    
+    # Запускаем задачу keep-alive в фоне
+    asyncio.get_event_loop().create_task(keep_alive())
     
     # Принудительно создаем цикл событий для стабильности на Render (Python 3.12+)
     import asyncio
