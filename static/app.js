@@ -39,6 +39,7 @@ const inflationTooltip = document.getElementById('inflationTooltip');
 const resetBtn = document.getElementById('resetBtn');
 
 const promoLinks = {
+    course: 'https://t.me/ProinvestUa_bot',
     youtube: 'https://www.youtube.com/@Pensioner_v35',
     freedom: 'https://freedom24.com/invite_from/7446576'
 };
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateRetirementModeUI();
 
     // Set promo links
+    document.getElementById('courseBtn').href = promoLinks.course;
     document.getElementById('youtubeBtn').href = promoLinks.youtube;
     document.getElementById('freedomBtn').href = promoLinks.freedom;
 
