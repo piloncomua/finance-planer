@@ -1,0 +1,9 @@
+{
+    "initial_capital": 1600000,
+    "monthly_income": 25000,
+    "monthly_expenses": 15000,
+    "interest_rate": 8,
+    "inflation_rate": 2,
+    "current_age": 35,
+    "retirement_age": 45
+}
